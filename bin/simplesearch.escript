@@ -12,7 +12,7 @@ main([Path|Params]) ->
         string = string:join(Params, " "),
         parser = #x_query_parser{stemming_strategy = some}},
     EnquireRes = xapian_drv:enquire(Server, Query),
-    MSetRes    = xapian_drv:match_set(Server, EnquireRes),
+    MSetRes    = xapian_drv:match_set(Server, EnquireRes, 0, 10),
     [{matches_estimated, EstCount}] = 
     xapian_drv:mset_info(Server, MSetRes, [matches_estimated]),
     io:format("~B results found:\n", [EstCount]),
