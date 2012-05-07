@@ -1,0 +1,15 @@
+ebin/*
+deps/*
+*.swp
+*.dump
+*.trace  
+*.o
+*.so
+*.dll
+.eunit
+doc/README.md
+*.gcov
+*.gcda
+*.gcno
+.~*
+priv/test_db/*
