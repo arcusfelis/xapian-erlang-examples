@@ -1,4 +1,4 @@
-{application, xapian_examples,
+{application, 'xapian-examples',
  [
   {description, ""},
   {vsn, git},
