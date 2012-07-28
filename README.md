@@ -13,6 +13,11 @@ $ ./bin/simplesearch.escript priv/test_db/test/ erlang
 
 ```
 
+
+```shell
+./bin/index_filters.escript ./priv/100-objects-v1-utf8.csv ./priv/test_db/index_filters 
+```
+
 Installation
 ============
 
