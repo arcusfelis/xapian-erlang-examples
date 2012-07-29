@@ -5,7 +5,7 @@
 
 main([Path]) ->
     load_deps(),
-    {ok, Server} = xapian_drv:open(Path, [write, create, open]),
+    {ok, Server} = xapian_server:open(Path, [write, create, open]),
     read_cycle(Server, []).
 
 
@@ -13,7 +13,7 @@ read_cycle(Server, Acc) ->
     case io:get_line("") of
         eof -> 
             handle_paragraph(Server, Acc),
-            xapian_drv:close(Server);
+            xapian_server:close(Server);
 
         "" ->
             handle_paragraph(Server, Acc),
@@ -46,7 +46,7 @@ index_document(Server, Data) ->
     , #x_text{value = Data}
     , #x_data{value = Data}
     ],
-    xapian_drv:add_document(Server, Document).
+    xapian_server:add_document(Server, Document).
         
 
 load_deps() ->

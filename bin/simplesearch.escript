@@ -7,14 +7,15 @@
 
 main([Path|Params]) ->
     load_deps(),
-    {ok, Server} = xapian_drv:open(Path, []),
+    {ok, Server} = xapian_server:open(Path, []),
     Query = #x_query_string{
-        string = string:join(Params, " "),
+        value  = string:join(Params, " "),
         parser = #x_query_parser{stemming_strategy = some}},
-    EnquireRes = xapian_drv:enquire(Server, Query),
-    MSetRes    = xapian_drv:match_set(Server, EnquireRes, 0, 10),
+    EnquireRes = xapian_server:enquire(Server, Query),
+    MSetParams = #x_match_set{enquire = EnquireRes, max_items = 10},
+    MSetRes    = xapian_server:match_set(Server, MSetParams),
     [{matches_estimated, EstCount}] = 
-    xapian_drv:mset_info(Server, MSetRes, [matches_estimated]),
+    xapian_server:mset_info(Server, MSetRes, [matches_estimated]),
     io:format("~B results found:\n", [EstCount]),
     Meta = xapian_record:record(document, record_info(fields, document)),
     QlcTable = xapian_mset_qlc:table(Server, MSetRes, Meta),

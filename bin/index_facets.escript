@@ -8,7 +8,8 @@
     id,
     description,
     title,
-    materials
+    collection,
+    maker
 }).
 
 object_header() ->
@@ -16,12 +17,19 @@ object_header() ->
         id = <<"id_NUMBER">>,
         description = <<"DESCRIPTION">>,
         title = <<"TITLE">>,
-        materials = <<"MATERIALS">>
+        collection = <<"COLLECTION">>,
+        maker = <<"MAKER">>
     }.
 
 main([DataPath, DbPath]) ->
     load_deps(),
-    {ok, Server} = xapian_server:open(DbPath, [write, create, open]),
+    DbParams = [write, create, open
+        , #x_value_name{name = collection,      slot = 0}
+        , #x_value_name{name = maker,           slot = 1}
+        , #x_value_name{name = title,           slot = 2}
+        ],
+
+    {ok, Server} = xapian_server:open(DbPath, DbParams),
     {ok, Fd} = file:open(DataPath, [binary]),
     Parser = csv_parser:file_parser(Fd),
     %% The first line is a header.
@@ -39,7 +47,8 @@ index_document(Server, Data) ->
         id = Identifier,
         description = Description,
         title = Title,
-        materials = Materials
+        collection = Collection,
+        maker = Maker
     } = Data,
     %% Generate an id for the document.
     IdTerm = <<"Q", Identifier/binary>>,
@@ -54,27 +63,19 @@ index_document(Server, Data) ->
     , #x_delta{}
     , #x_text{value = Description}
 
+    %% Add values: maker and collection are for facet search,
+    %% title is for the display purpose.
+    , #x_value{slot = maker,        value = Maker}
+    , #x_value{slot = collection,   value = Collection}
+    , #x_value{slot = title,        value = Title}
+
     %% Add an identifier.
     , #x_term{frequency = 0, value = IdTerm}
-    ] ++ materials_to_terms(Materials),
+    ],
     %% We use the identifier to ensure each object ends up in the
     %% database only once no matter how many times we run the
     %% indexer.
     xapian_server:replace_or_create_document(Server, IdTerm, Document).
-
-
-materials_to_terms(Bin) ->
-    Bins  = binary:split(Bin, <<";">>, [global, trim]),
-    Bins2 = [binary2:trim(X, $ ) || X <- Bins],
-    [#x_term{frequency = 0, 
-             value = material_to_term(X, "XM")} 
-        || X <- Bins2, X =/= <<>>].
-
-
-material_to_term(Bin, Prefix) ->
-    Str = unicode:characters_to_list(Bin),
-    LowerStr = ux_string:to_lower(Str),
-    unicode:characters_to_binary(Prefix ++ LowerStr).
         
 
 load_deps() ->
