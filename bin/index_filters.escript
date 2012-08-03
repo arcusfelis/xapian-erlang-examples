@@ -19,9 +19,15 @@ object_header() ->
         materials = <<"MATERIALS">>
     }.
 
+
+open_params() ->
+    [write, create, open
+    , #x_value_name{name = title, slot = 0}].
+
+
 main([DataPath, DbPath]) ->
     load_deps(),
-    {ok, Server} = xapian_server:open(DbPath, [write, create, open]),
+    {ok, Server} = xapian_server:open(DbPath, open_params()),
     {ok, Fd} = file:open(DataPath, [binary]),
     Parser = csv_parser:file_parser(Fd),
     %% The first line is a header.
@@ -56,6 +62,7 @@ index_document(Server, Data) ->
 
     %% Add an identifier.
     , #x_term{frequency = 0, value = IdTerm}
+    , #x_value{slot = title, value = Title}
     ] ++ materials_to_terms(Materials),
     %% We use the identifier to ensure each object ends up in the
     %% database only once no matter how many times we run the
