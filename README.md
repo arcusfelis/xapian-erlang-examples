@@ -17,6 +17,7 @@ $ ./bin/simplesearch.escript priv/test_db/simple/ erlang
 ```shell
 ./bin/index_filters.escript ./priv/100-objects-v1-utf8.csv ./priv/test_db/filters 
 ./bin/index_facets.escript ./priv/100-objects-v1-utf8.csv ./priv/test_db/facets
+./bin/index_ranges2.escript priv/states.csv priv/test_db/states
 ./bin/search_facets.escript ./priv/test_db/facets clock
 ./bin/search_filters.escript priv/test_db/filters clock 'steel (metal)' 
 ```

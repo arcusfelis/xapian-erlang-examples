@@ -13,3 +13,4 @@ doc/README.md
 *.gcno
 .~*
 priv/test_db/*
+*.py
