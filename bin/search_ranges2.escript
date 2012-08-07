@@ -5,7 +5,6 @@
 
 -record(document, {docid, rank, name, admitted, population}).
 
-
 main(Args = [_, _]) ->
     main(Args ++ [0]);
 
@@ -29,9 +28,15 @@ open_params() ->
 
 
 search(Path, QueryStr, Offset, PageSize) ->
-    {ok, Server} = xapian_server:open(Path, open_params()),
-    EnquireDescriptor = enquire_descriptor(main_query(QueryStr)),
-    EnquireRes = xapian_server:enquire(Server, EnquireDescriptor),
+    Params = open_params(),
+    {ok, Server} = xapian_server:open(Path, Params),
+    Procs = [xapian_resource:date_value_range_processor(2, 1860, true)
+            ,xapian_resource:number_value_range_processor(1) ],
+    Query = #x_query_string{
+        value = QueryStr,
+        parser = #x_query_parser{stemming_strategy = some,
+                                 value_range_processors = Procs}},
+    EnquireRes = xapian_server:enquire(Server, Query),
     MSetParams = #x_match_set{
         enquire = EnquireRes,
         offset = Offset,
@@ -39,17 +44,6 @@ search(Path, QueryStr, Offset, PageSize) ->
     MSetRes    = xapian_server:match_set(Server, MSetParams),
     print_query_result(Server, MSetRes),
     ok.
-
-
-enquire_descriptor(Query) ->
-     #x_enquire{value = Query,
-                order = #x_sort_order{type = value_relevance,
-                                      value = admitted_year}}.
-
-main_query(QueryStr) ->
-    #x_query_string{
-        value = QueryStr,
-        parser = #x_query_parser{stemming_strategy = some}}.
 
 
 print_query_result(Server, MSetRes) ->
@@ -62,9 +56,8 @@ print_query_result(Server, MSetRes) ->
 
 print_document(#document{ docid = DocId, rank = Rank, 
                           name = Name, admitted = Date, population = Pop}) ->
-    io:format("~B: #~3..0B "     "~25ts\t"     "~8ts\t"      "~10B~n", 
+    io:format("~2B: #~3..0B "     "~25ts\t"     "~8ts\t"      "~10B~n", 
               [Rank + 1, DocId, Name, Date, round(Pop)]).
-
     
 load_deps() ->
     ScriptDir = filename:dirname(escript:script_name()),

@@ -73,11 +73,13 @@ index_document(Server, Data) ->
 
 index_admitted(<<"">>) -> [];
 index_admitted(Admitted) ->
+    %% Get a record of parsed binaries.
     case parse_date(Admitted) of
     undefined -> [];
     Parsed = #date{year = Year} -> 
+        YearNum = list_to_integer(binary_to_list(Year)),
         [#x_value{slot = admitted, value = date_to_string(Parsed)} % YYYYMMDD
-        ,#x_value{slot = admitted_year, value = Year}
+         ,#x_value{slot = admitted_year, value = YearNum}
         ]
     end.
 
@@ -134,6 +136,7 @@ parse_date(Str) ->
 
 
 %% YYYYMMDD
+%% #date{} contains raw binaries.
 date_to_string(#date{month = Month, day = Day, year = YYYY}) ->
     MM = month_name_to_mm(Month),
     DD = encode_2digit_day(Day),
