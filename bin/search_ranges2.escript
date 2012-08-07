@@ -30,8 +30,8 @@ open_params() ->
 search(Path, QueryStr, Offset, PageSize) ->
     Params = open_params(),
     {ok, Server} = xapian_server:open(Path, Params),
-    Procs = [xapian_resource:date_value_range_processor(2, 1860, true)
-            ,xapian_resource:number_value_range_processor(1) ],
+    Procs = [xapian_resource:date_value_range_processor(admitted, 1860, true)
+            ,xapian_resource:number_value_range_processor(admitted_year) ],
     Query = #x_query_string{
         value = QueryStr,
         parser = #x_query_parser{stemming_strategy = some,
